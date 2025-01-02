@@ -1,15 +1,20 @@
 package com.example.auction;
 
+import com.example.Pokemon.Pokemon;
+import com.example.Pokemon.PokemonService;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
 public class EnchereManager {
+    @Inject
+    PokemonService pokemonServiceClient;
     @Inject
     private EntityManager em;
 
@@ -41,4 +46,19 @@ public class EnchereManager {
         em.merge(encher);
     }
 
+
+    public List<Enchere> getEnchereParType(String string){
+            List<Enchere> encheres=findActiveAuctions();
+            List<Enchere> enchreretourne=new ArrayList<>();
+            for(Enchere e:encheres){
+                Pokemon pokemon=pokemonServiceClient.trouverPokemon(e.getPokemonId());
+                for(String s: pokemon.getTypes()){
+                    if(s.equalsIgnoreCase(string)){
+                        enchreretourne.add(e);
+                    }
+                }
+            }
+         return enchreretourne;
+    }
+//getEnchereByUserId
 }

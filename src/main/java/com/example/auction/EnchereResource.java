@@ -3,7 +3,9 @@ package com.example.auction;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import jakarta.validation.*;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -47,10 +49,10 @@ public class EnchereResource {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEnchere(@PathParam("id") Long id){
+    public Enchere getEncherebyId(@PathParam("id") Long id){
         Enchere e= manager.findEnchere(id);
-        if(e==null){return Response.status(Response.Status.NOT_FOUND).entity("enchere not found").build();}
-        return Response.ok(e).build();
+
+        return e;
     }
 
     @GET
@@ -58,6 +60,22 @@ public class EnchereResource {
     public List<Enchere> getAllEncheres(){
         return manager.findActiveAuctions();
     }
+
+    @GET
+    @Path("/{type}")
+    public List<Enchere> getAllEncheresByType(@PathParam("type") String type){
+        return es.getEnchereParType(type);
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEnchere(@PathParam("id") Long id){
+        Enchere e= manager.findEnchere(id);
+        if(e==null){return Response.status(Response.Status.NOT_FOUND).entity("enchere not found").build();}
+        return Response.ok(e).build();
+    }
+
 
 
 }

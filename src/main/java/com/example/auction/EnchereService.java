@@ -1,6 +1,9 @@
 package com.example.auction;
 
 
+import com.example.Pokemon.PokemonService;
+import com.example.User.User;
+import com.example.User.UserService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -9,7 +12,7 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
-
+import com.example.Pokemon.Pokemon;
 @ApplicationScoped
 public class EnchereService {
 
@@ -18,20 +21,20 @@ public class EnchereService {
 
     @Inject
     @RestClient
-    PokemonServiceClient pokemonService;
+    PokemonService pokemonService;
 
     @Inject
     private EnchereManager enem;
 
     @Inject
-    private userService userservice;
+    private UserService userservice;
 
    private Random random=new java.util.Random();
 
    @Transactional
    public void createAuctionAutomatically() {
        Pokemon pokemon=pokemonService.getRandomPokemon();
-       double baseprice=pokemonService.getPokemonPriceById(pokemon.getId());
+       double baseprice=pokemon.getValeurReelle();
 
        Enchere enchere=new Enchere();
        enchere.setPokemonId(pokemon.getId());
@@ -40,7 +43,7 @@ public class EnchereService {
        enchere.setHighestBidderId(null);
        enchere.setDateExpiration(LocalDateTime.now().plusHours(24));
        enchere.setStatus("active");
-       pokemonService.transferAuctionHistory(enchere.getPokemonId(), enchere);
+       pokemonService.addAuctionHistory(enchere.getPokemonId(), enchere);
        em.createEncher(enchere);
 
 
@@ -52,13 +55,13 @@ public class EnchereService {
 
         for (Enchere e : expiredEncheres) {
             if (e.getHighestBid() != 0 && e.getHighestBidderId() != null) {
-                boolean paymentSuccessful = userservice.deductLimcoins(e.getHighestBidderId(), e.getHighestBid());
+                boolean paymentSuccessful = userservice.deductLimCoins(e.getHighestBidderId(),(int) e.getHighestBid());
 
                 if (paymentSuccessful) {
                     // Transférer le Pokémon au gagnant
-                    userservice.addPokemonToUser(e.getHighestBidderId(), e.getPokemonId());
+                    userservice.addPokemonToUser(e.getHighestBidderId(), pokemonService.trouverPokemon(e.getPokemonId()));
                     // Notifier le service Pokémon
-                    pokemonService.transferAuctionHistory(e.getPokemonId(), e);
+                    pokemonService.addAuctionHistory(e.getPokemonId(), e);
                 } else {
                     // Passer au second meilleur enchérisseur
                     handleNextHighestBidder(e);
@@ -75,10 +78,10 @@ public class EnchereService {
 
         for (int i = 1; i < allBids.size(); i++) { // Commence par le second enchérisseur
             Bid nextBid = allBids.get(i);
-            boolean paymentSuccessful = userservice.deductLimcoins(nextBid.getUserId(), nextBid.getAmount());
+            boolean paymentSuccessful = userservice.deductLimCoins(nextBid.getUserId(),(int) nextBid.getAmount());
 
             if (paymentSuccessful) {
-                userservice.addPokemonToUser(nextBid.getUserId(), enchere.getPokemonId());
+                userservice.addPokemonToUser(nextBid.getUserId(), pokemonService.trouverPokemon(enchere.getPokemonId()));
                 break;
             }
         }
@@ -89,21 +92,26 @@ public class EnchereService {
     @Transactional
     public String placerBid(Long enchereId,Long userId,double amount){
        Enchere enchere=enem.findEnchere(enchereId);
-       User user =userservice.getUser();
+       User user =userservice.findUserById(userId);
        if(enchere==null || !"active".equals(enchere.getStatus())){
            return "enchere not found!";
        }
        if(amount<enchere.getHighestBid()){
            return "Mise trop faible";
        }
-        if (user.getPlAF) {
-        }
        enchere.setHighestBid(amount);
        enchere.setHighestBidderId(userId);
        em.miseAjourEnchere(enchere);
-       pokemonService.transferAuctionHistory(enchere.getPokemonId(), enchere);
+       pokemonService.addAuctionHistory(enchere.getPokemonId(), enchere);
        return "enchere mis";
    }
 
    //chercher enchere par type de pokemon
+
+    public List<Enchere> getEnchereParType(String type){
+       return enem.getEnchereParType(type);
+    }
+    public Enchere findEnchereById(Long enchereID){
+       return enem.findEnchere(enchereID);
+    }
 }

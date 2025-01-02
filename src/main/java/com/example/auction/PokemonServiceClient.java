@@ -38,7 +38,9 @@ public interface PokemonServiceClient {
 //il faut configurer chaque l'url du service pokemon dans app property
     /*# URL du service Pokémon
     pokemon-service/mp-rest/url=http://localhost:8081
-    pokemon-service/mp-rest/scope=javax.inject.Singleton*/
+    pokemon-service/mp-rest/scope=javax.inject.Singleton
+    et il faut que ca sera le meme pour userserviceclient
+    */
 
 }
 

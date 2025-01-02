@@ -11,6 +11,7 @@ public class Pokemon {
     private List<String> evolution_chain;
     private Map<String, String> stats;
     private List<Enchere> History;
+    private List<String> types;
 
     // Constructeur par défaut
     public Pokemon() {
@@ -23,15 +24,18 @@ public class Pokemon {
                 "speed", ""
         );
         this.History = new ArrayList<>();
+        this.types = new ArrayList<>();
+
     }
 
     // Constructeur avec paramètres
-    public Pokemon(Long id, String name, List<String> abilities, List<String> evolution_chain, Map<String, String> stats) {
+    public Pokemon(Long id, String name, List<String> abilities, List<String> evolution_chain, Map<String, String> stats,List<String> types) {
         this.id = id;
         this.name = name;
         this.abilities = abilities;
         this.evolution_chain = evolution_chain;
         this.stats = stats;
+        this.types = types;
         this.History=new ArrayList<>();
     }
 
@@ -82,6 +86,13 @@ public class Pokemon {
     public List<Enchere> getHistory() {
         return History;
     }
+    public void addType(String type) {
+        this.types.add(type);
+    }
+    public List<String> getTypes() {
+        return this.types;
+    }
+
 }
 
 

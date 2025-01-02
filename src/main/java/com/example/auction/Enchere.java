@@ -8,7 +8,7 @@ import java.util.List;
 
 
 @Entity
-public class Enchere extends PanacheEntity {
+public class Enchere  {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
